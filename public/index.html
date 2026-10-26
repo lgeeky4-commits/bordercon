@@ -1,0 +1,90 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101c20"><title>BORDER CONTROL / RP FIELD CONSOLE v1.3</title><link rel="stylesheet" href="/border/style.css"><link rel="stylesheet" href="/border/theme-live.css"><script src="/socket.io/socket.io.js" defer></script><script src="/border/app.js" defer></script><script src="/border/media-radio.js" defer></script><script src="/border/live-direction.js" defer></script><script src="/border/theme-studio.js" defer></script></head>
+<body><div class="stripes"></div><header class="topbar"><div class="identity"><span class="identity-logo">BC<span>04</span></span><div><b>BORDER CONTROL</b><small>FIELD COORDINATION / ROLEPLAY ONLY</small></div></div><div class="topbar-right"><span class="sim-pill">FAKE SIMULATION</span><span id="onlineCount" class="online-count">0 / 4 ONLINE</span><button type="button" class="theme-opener" id="openThemes">THEMES / EDIT</button><a href="/" class="roles-link">ROLES</a></div></header>
+<div class="notice">FICTIONAL TRAINING MAP — NOT FOR REAL BORDER, EMERGENCY, OR ENFORCEMENT OPERATIONS. NO GPS OR PERSON TRACKING.</div>
+<main class="layout" id="app" hidden>
+ <aside class="left"><div class="section-head"><span>01 / FIELD UNITS</span><b id="unitCount">00</b></div><div id="unitRoster" class="unit-roster"></div><label class="mini-label" for="unitStatus">MY STATUS</label><select id="unitStatus"><option>AVAILABLE</option><option>PATROL</option><option>AT POST</option><option>OBSERVING</option></select>
+ <div class="section-head tools-head"><span>02 / FIELD TOOLS</span><small>SELECT THEN TAP MAP</small></div><div class="tools" id="tools"><button class="selected" data-mode="view" type="button">VIEW MAP</button><button data-mode="CHECKPOINT" type="button">CHECKPOINT</button><button data-mode="BLOCK" type="button">ROADBLOCK</button><button data-mode="OBSERVATION" type="button">OBSERVATION</button><button data-mode="PATROL" type="button">PATROL POINT</button><button data-mode="NOTE" type="button">LOCATION NOTE</button><button data-mode="zone" type="button">BLOCK AREA</button><button id="cancelTool" type="button">CANCEL</button></div>
+ <div class="live-tools" aria-label="Fictional live map tools"><button type="button" id="borderLiveMove">LIVE MARK / OFF</button><button type="button" id="borderLiveIncoming">INCOMING ROUTE</button><button type="button" id="borderLiveClear">CLEAR MY LIVE MARKS</button></div><div id="liveStatus" class="live-status">Tap LIVE MARK, then tap different points. The latest dot moves and only two arrows remain.</div>
+ <div id="toolHelp" class="help">Choose a field tool and tap the reference map. Only fictional location marks are shared.</div><div class="label-row"><span>GAME SESSION</span><b>4 PLAYER MAX</b></div></aside>
+ <section class="center"><div class="map-header"><div><small>03 / FIELD MAP</small><h1>SECTOR <span>OVERVIEW</span></h1></div><div class="zoom-buttons"><button id="zoomOut" aria-label="Zoom out" type="button">−</button><b id="zoomLabel">100%</b><button id="zoomIn" aria-label="Zoom in" type="button">+</button><button id="zoomReset" type="button">RESET</button><button id="panToggle" type="button" aria-pressed="false">PAN MAP</button></div></div>
+ <div id="mapViewport" class="map-viewport" aria-label="Zoomable fictional map. Swipe when zoomed in or use Pan Map to move the view."><div id="mapBoard" class="map-board" aria-label="Fictional map for checkpoints and block areas" role="application"><img src="/border/reference-map.png" alt="Illustrated fictional area map" draggable="false"><div class="map-grid"></div><div class="map-lines" id="areaLayer"></div><div class="marker-layer" id="markerLayer"></div><div class="live-direction-layer" id="liveDirectionLayer"></div></div><div class="map-overlay-label"><span>REFERENCE ONLY</span><b>SECTOR 01 / DEMO</b></div><div id="mapFeedback" class="map-feedback">VIEW MODE</div></div>
+ <div class="map-footer"><span id="mapStatus">TAP A TOOL TO PLACE A MARK</span><span id="coords">X 00.0 / Y 00.0</span></div>
+ <div class="map-bottom"><div class="section-head"><span>04 / MAP ITEMS</span><b id="itemCount">0</b></div><div class="mini-filters"><button data-filter="all" class="active">ALL</button><button data-filter="point">MARKS</button><button data-filter="zone">BLOCK AREAS</button></div><div id="itemList" class="item-list"></div></div></section>
+ <aside class="right"><div class="section-head"><span>05 / FIELD COMMUNICATIONS</span><small>SHARED ROOM</small></div>
+ <div class="media-toolbar" aria-label="Browser camera capture">
+  <button id="takePhoto" type="button"><span class="tool-square"></span> TAKE PHOTO</button>
+  <button id="recordVideo" type="button"><span class="tool-square record"></span> RECORD VIDEO</button>
+ </div>
+ <div class="radio-panel">
+  <div class="radio-row"><span>WALKIE-TALKIE / LIVE</span><span id="radioStatus" aria-live="polite">IDLE</span></div>
+  <button id="radioTalk" type="button" aria-label="Hold to talk on the walkie-talkie">HOLD TO TALK</button>
+  <button id="enableAudio" type="button" class="audio-enable">ENABLE SPEAKER</button>
+  <div id="radioHelp">Hold TALK to transmit to everyone in this room. Only one speaker at a time.</div>
+ </div>
+ <div class="chat-title">TEAM CHAT <span>● ONLINE</span></div><div id="chat" class="chat" aria-live="polite" role="log"></div><form id="chatForm"><input id="chatInput" maxlength="600" placeholder="Message to field units..." autocomplete="off"><button type="submit">SEND</button></form><div class="section-head history-head"><span>06 / MAP LOG</span><small>RECENT</small></div><div id="activityList" class="activity-list"></div><p class="footer-note">This role has intentionally limited powers. No private surveillance, camera access, real vehicle tracking, or weapon controls.</p></aside>
+</main>
+<div id="joinOverlay" class="overlay"><section class="join-card"><div class="join-tag">FICTIONAL FIELD ROLE</div><div class="join-icon">BC<span>04</span></div><h2>BORDER CONTROL</h2><p>Join the four-person roleplay field room. Use checkpoint marks, block-area outlines, observation notes and team chat on a fictional reference map.</p><label for="joinName">YOUR CALLSIGN</label><input id="joinName" maxlength="18" placeholder="Example: Field-01" autocomplete="nickname"><button type="button" id="joinBtn">ENTER FIELD ROOM</button><div id="joinError" role="alert"></div><a class="back-link" href="/">← CHOOSE DIFFERENT ROLE</a></section></div>
+<div id="editorOverlay" class="overlay" hidden><section class="editor-card"><header><h2 id="editorTitle">NEW CHECKPOINT</h2><button id="editorClose" type="button" aria-label="Close form">✕</button></header><p id="editorCoords"></p><label for="markLabel">LABEL</label><input id="markLabel" maxlength="70" placeholder="Checkpoint A"><label for="markNote">NOTES</label><textarea id="markNote" maxlength="240" rows="3" placeholder="Short fictional roleplay notes"></textarea><div class="dialog-actions"><button type="button" id="editorCancel">CANCEL</button><button type="button" id="editorSave">SAVE MARK</button></div><small>Visible to everyone in the Border Control room only.</small></section></div>
+<div id="detailOverlay" class="overlay" hidden><section class="editor-card"><header><h2 id="detailTitle">MAP MARK</h2><button id="detailClose" type="button" aria-label="Close detail">✕</button></header><div id="detailInfo"></div><p id="detailText"></p><div id="detailMedia" class="detail-media"></div><div class="dialog-actions"><button type="button" id="removeMark" class="danger">REMOVE MY MARK</button><button type="button" id="detailDone">CLOSE</button></div></section></div>
+<div id="captureOverlay" class="overlay" hidden>
+ <section class="capture-card" role="dialog" aria-modal="true" aria-labelledby="captureTitle">
+  <header><h2 id="captureTitle">BROWSER CAMERA</h2><button type="button" id="captureClose" aria-label="Close camera">✕</button></header>
+  <div class="capture-status" id="captureStatus">CAMERA OFF</div>
+  <div class="camera-stage">
+   <video id="cameraPreview" autoplay muted playsinline></video>
+   <img id="photoPreview" alt="Newly captured photo preview" hidden>
+   <video id="clipPreview" controls playsinline hidden></video>
+   <div class="camera-corners" aria-hidden="true"></div>
+  </div>
+  <div class="capture-actions">
+   <button id="flipCamera" type="button">FRONT / REAR</button>
+   <button id="capturePhotoBtn" type="button">TAKE PHOTO</button>
+   <button id="startRecording" type="button">START VIDEO</button>
+   <button id="stopRecording" type="button" hidden>STOP VIDEO</button>
+  </div>
+  <div class="capture-share">
+   <button id="sendMediaChat" type="button" disabled>SEND TO CHAT</button>
+   <button id="sendMediaMap" type="button" disabled>PLACE ON MAP</button>
+   <button id="retakeMedia" type="button" disabled>RETAKE</button>
+  </div>
+  <p class="capture-help">Photo/video capture stays inside this website when your browser supports it. You must choose SEND or PLACE; no automatic sharing. Video is limited to 8 seconds.</p>
+ </section>
+</div>
+
+<div id="themeOverlay" class="overlay" hidden>
+ <section class="theme-dialog" role="dialog" aria-modal="true" aria-labelledby="themeTitle">
+  <header class="theme-titlebar"><h2 id="themeTitle">BORDER / THEME STUDIO</h2><button id="closeThemes" type="button">CLOSE</button></header>
+  <p class="theme-note">Adjust the look of your own screen. Save a custom theme to restore it later. Theme changes don't alter other players' screens.</p>
+  <div class="theme-tabs"><button type="button" class="active" data-theme-panel="effects">IMAGE FILTERS</button><button type="button" data-theme-panel="editor">UI EDITOR</button><button type="button" data-theme-panel="wallpapers">30 WALLPAPERS</button></div>
+  <div id="themeEffects" class="theme-panel">
+   <div class="theme-sliders">
+    <label>GRIT <input type="range" data-theme-setting="grit" min="0" max="100" value="10"><output data-theme-output="grit">10</output></label>
+    <label>GRIT SIZE <input type="range" data-theme-setting="gritSize" min="1" max="12" value="4"><output data-theme-output="gritSize">4</output></label>
+    <label>HUE <input type="range" data-theme-setting="hue" min="-180" max="180" value="0"><output data-theme-output="hue">0</output></label>
+    <label>CONTRAST <input type="range" data-theme-setting="contrast" min="50" max="180" value="100"><output data-theme-output="contrast">100</output></label>
+    <label>SATURATION <input type="range" data-theme-setting="saturation" min="0" max="200" value="100"><output data-theme-output="saturation">100</output></label>
+    <label>BRIGHTNESS <input type="range" data-theme-setting="brightness" min="45" max="160" value="100"><output data-theme-output="brightness">100</output></label>
+   </div>
+   <button type="button" id="resetThemeEffects" class="theme-neutral">RESET IMAGE FILTERS</button>
+  </div>
+  <div id="themeEditor" class="theme-panel" hidden>
+   <div class="theme-editor-grid">
+    <label>BOX TO RECOLOR <select id="themeBox"><option value="header">HEADER</option><option value="left">LEFT OPERATIONS</option><option value="map">MAP PANEL</option><option value="right">COMMUNICATIONS</option><option value="chat">CHAT BOX</option><option value="tool">TOOL BUTTONS</option><option value="popup">POPUPS</option></select></label>
+    <label>BOX COLOR <input type="color" id="themeBoxColor" value="#0b181e"></label>
+    <label>LETTER COLOR <input type="color" id="themeTextColor" value="#e0e9e6"></label>
+    <label>LINE COLOR <input type="color" id="themeLineColor" value="#2b4148"></label>
+    <label>FONT <select id="themeFont"><option value="condensed">COLD / CONDENSED</option><option value="mono">TERMINAL / MONO</option><option value="modern">MODERN / SANS</option><option value="industrial">INDUSTRIAL / SQUARE</option></select></label>
+    <label>PATTERN <select id="themePattern"><option value="none">NONE</option><option value="grid">FINE GRID</option><option value="dots">DOT MATRIX</option><option value="scan">SCANLINES</option><option value="diagonal">DIAGONAL</option><option value="cross">CROSSHATCH</option></select></label>
+   </div>
+   <div class="theme-preview" id="themePreview">LIVE THEME PREVIEW / BORDER CONTROL</div>
+  </div>
+  <div id="themeWallpapers" class="theme-panel" hidden>
+   <p class="theme-note">30 original geometric wallpapers. Select a thumbnail to apply to the panels/background. No extra uploads needed.</p>
+   <div id="wallpaperGallery" class="wallpaper-gallery" aria-label="30 wallpaper choices"></div>
+  </div>
+  <div class="theme-save-row"><input id="themeSaveName" maxlength="28" placeholder="Theme name (for example: Night Sector)"><button id="saveTheme" type="button">SAVE THEME</button><button id="restoreTheme" type="button">LOAD SAVED</button></div>
+  <div id="themeSavedList" class="saved-theme-list"></div>
+  <div id="themeMessage" class="theme-message" aria-live="polite"></div>
+ </section>
+</div>
+<div id="toast" class="toast" role="status" hidden></div></body></html>
